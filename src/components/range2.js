@@ -1,67 +1,116 @@
 import React, {useEffect, useState, useRef, useCallback} from "react"
+import { getLeft, getPercent } from "../util/util"
 
 export default Range = ({rangeValues, onChange}) => {
-    const lineRef = useRef()
     const [values, setValues] = useState([])
-    const [x, setX] = useState(0)
-    const [dragging, setDragging] = useState(false)
+    const sliderRef = useRef()
 
+    const [dragging, setDragging] = useState()
+
+    const bullet1Ref = useRef()
+    const bullet2Ref = useRef()
+    const bullet1Pos = useRef()
+    const bullet2Pos = useRef()
+
+    
     const [positionBullet1, setPositionBullet1] = useState(0)
     const [positionBullet2, setPositionBullet2] = useState(0)
 
-    console.log(dragging)
-    const move = useCallback(
-        (e) => {
-            if(dragging){
-                setX(e.clientX)
-                console.log(x)
-            }
-        },
-        [dragging],
-    )
-
-    useEffect(() => {
-        
-        window.addEventListener("mousemove", move)
-        const {width} = lineRef.current.getBoundingClientRect()
-        setPositionBullet2(width)
-        return () => window.removeEventListener("mousemove", move)
-    }, [move])
 
     useEffect(() => {
         setValues(rangeValues.sort((a, b) => a-b))
     }, [rangeValues])
 
-    const drag = (e) => {
-        e.preventDefault();
-        setDragging(true)
+    useEffect(() => {
+        if(!!dragging){
+            console.log("Add mousemove")
+            console.log("Add mouseup")
+            document.addEventListener("mousemove", mouseMove)
+            document.addEventListener('mouseup', mouseUp);
+        return  () => {
+            console.log("Remove mousemove")
+            document.removeEventListener("mousemove", mouseMove);
+        }
+        }else{
+
+        }
+    }, [dragging])
+
+    const mouseMove = (event) => {
+        
+        const left = sliderRef.current.getBoundingClientRect().left
+        if(dragging === "bullet1"){
+            let newPosX = event.clientX - bullet1Pos.current - left
+            const end = sliderRef.current.offsetWidth - bullet1Ref.current.offsetWidth
+            const start = 0
+            if(newPosX < start){
+                newPosX = 0
+            }
+            if(newPosX > end){
+                newPosX = end
+            }
+            const percent = getPercent(newPosX, end)
+            bullet1Ref.current.style.left = getLeft(percent)
+            console.log("dragging", percent)
+        }
+        if(dragging === "bullet2"){
+            let newPosX = event.clientX - bullet2Pos.current - left
+        }
+        
     }
 
-    const drop = (e) => {
-        e.preventDefault();
-        setDragging(false)
+    const mouseUp = () => {
+        setDragging(undefined)
+        console.log("Remove mouseup")
+        document.removeEventListener('mouseup', mouseUp);
     }
+
+    const mouseDown = (event, bullet) => {
+        console.log("mousedown")
+        setDragging(bullet)
+        if(bullet === "bullet1"){
+            bullet1Pos.current = event.clientX - bullet1Ref.current.getBoundingClientRect().left
+        }
+        if(bullet === "bullet2"){
+            bullet2Pos.current = event.clientX - bullet2Ref.current.getBoundingClientRect().left
+        }
+    }
+
 
     return <div className="range">
         <div className="range-wrapper">
-            <span className="label">{values.length > 0 ? values[0] : ""}</span>
-            <Line ref={lineRef} className="line">
-                <span draggable onDrag={drag} onDragLeave={drop} className="bullet" style={{transform: `translateX(${positionBullet1}px)`}}></span>
-                <span  className="bullet" style={{transform: `translateX(${positionBullet2}px)`}}></span>
+            <Label text={values.length > 0 ? values[0] : ""} />
+            <Slider ref={sliderRef}>
+                <Bullet ref={bullet1Ref} onMouseDown={(ev) => mouseDown(ev, "bullet1")} />
+                {/* <Bullet ref={bullet2Ref} onMouseDown={(ev) => mouseDown(ev, "bullet2")} /> */}
                 {
-                    values.map(v => <span key={v} className="line-break"></span>)
+                    values.map(v => <Track key={v} />)
                 }
-            </Line>
-            <span className="label">{values.length > 0 ? values[values.length - 1] : ""}</span>
+            </Slider>
+            <Label text={values.length > 0 ? values[values.length - 1] : ""} />
         </div>
     </div>
 }
 
 
-const Line = React.forwardRef(({children, ...rest}, ref) => {
-    return <div className="line-wrapper" >
-        <div {...rest} ref={ref} className="line">
+const Slider = React.forwardRef(({children, className, ...rest}, ref) => {
+    return <div className="slider-wrapper" >
+        <div {...rest}  className={`slider ${className || ""}`.replace(" ", "")} ref={ref}>
             {children}
         </div>
     </div>
+})
+
+const Track = React.forwardRef(({className, ...rest}, ref) => {
+    return <span {...rest} className={`track ${className || ""}`.replace(" ", "")} />
+})
+
+const Bullet = React.forwardRef(({position, className, ...rest}, ref) => {
+    return <span {...rest} className={`bullet ${className || ""}`.replace(" ", "")} ref={ref} />
+})
+
+const Label = React.forwardRef(({className, text, ...rest}, ref) => {
+    return <span {...rest} className={`label ${className || ""}`.replace(" ", "")}>
+        {text}
+    </span>
 })

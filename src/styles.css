@@ -38,12 +38,12 @@ button {
 	padding-top: 15px;
 }
 
-.line-wrapper {
+.slider-wrapper {
 	width: 100%;
 	min-width: 200px;
 	padding-top: 15px;
 }
-.line-wrapper .line {
+.slider-wrapper .slider {
 	height: 15px;
 	border-top: 2px solid black;
 	display: flex;
@@ -52,13 +52,14 @@ button {
 	align-items: stretch;
 	position: relative;
 }
-.line-wrapper .line .line-break {
+.slider-wrapper .slider .track {
 	width: 2px;
 	background: black;
 	height: 100%;
 	position: relative;
+	min-height: 15px;
 }
-.line-wrapper .line .line-break:last-child {
+.slider-wrapper .slider .track:last-child {
 	left: 1px;
 }
 
@@ -68,5 +69,6 @@ button {
 	background: black;
 	border-radius: 20px;
 	position: absolute;
-	margin: -10px 0 0 -10px;
+	z-index: 2;
+	margin: -10px 0 0 0;
 }
