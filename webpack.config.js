@@ -1,38 +1,56 @@
 const path = require("path");
 const HtmlWebPackPlugin = require("html-webpack-plugin");
+const webpack = require('webpack')
 
-module.exports = {
-  entry: "./src/index.js",
-  output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "bundle.js",
-  },
-  resolve: {
-    extensions: [".js", ".jsx"],
-  },
-  module: {
-    rules: [
-      {
+const javascriptRules = {
         test: /\.(js|jsx)$/,
-        exclude: /node_modules/,
-        use: {
-          loader: "babel-loader",
+        loader: 'babel-loader',
+        options:{
+          presets: [
+            "@babel/preset-env",
+            [
+              '@babel/preset-react',
+              {
+                runtime: 'automatic'
+              }
+            ]
+          ],
+          "plugins": [
+            "@babel/plugin-proposal-object-rest-spread"
+          ]
         },
-      },
-      {
-        test: /\.html$/,
-        use: [
-          {
-            loader: "html-loader",
-          },
-        ],
-      },
+      }
+
+const stylesRules = {
+  test: /\.css$/,
+  use: ['style-loader', 'css-loader']
+}
+
+module.exports = (env, argv) => {
+  console.log(argv)
+
+  return {
+    entry: "./src/index.js",
+    output: {
+      filename: "bundle.js",
+      path: path.resolve(__dirname, "dist"),
+    },
+    plugins: [
+      new HtmlWebPackPlugin({
+        template: "./public/index.html",
+        filename: "./index.html",
+      }),
     ],
-  },
-  plugins: [
-    new HtmlWebPackPlugin({
-      template: "./public/index.html",
-      filename: "./index.html",
-    }),
-  ],
+    devtool: 'source-map',
+    module: {
+      rules: [
+        javascriptRules,
+        stylesRules
+      ],
+    },
+    devServer: {
+      open: true,
+      compress: true,
+    }
+  }
 };

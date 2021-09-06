@@ -1,7 +1,9 @@
-import React from "react";
+import React from 'react'
 import ReactDOM from "react-dom";
+import {App} from "./app/app";
+import "./styles.css";
 
-import {App} from "./App";
-ReactDOM.render(<App />, document.getElementById("app"));
+console.log('Programación Miguel Angel Hernández Von Hartmann')
+console.log('contacto@hernandezmiguel.es - https://hernandezmiguel.es ')
 
-module.hot.accept();
+ReactDOM.render(<App />, document.getElementById("mango"));
