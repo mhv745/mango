@@ -17,6 +17,7 @@ export const App = () => {
             ejercicio === "exercise1" ? <Exercise1  onChange={goTo} /> : 
             ejercicio === "exercise2" ? <Exercise2  onChange={goTo} /> : 
              <Home  onChange={goTo} />
+           
         }
         
     
