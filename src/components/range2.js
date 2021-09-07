@@ -1,41 +1,84 @@
-import React, {useEffect, useState, useRef, useCallback} from "react"
-import { getLeft, getPercent } from "../util/util"
+import React, {useEffect, useState, useRef, forwardRef, useImperativeHandle} from "react"
+import {  getOfsetOfValue, getNextValue, getOffsetValues, getRealValue } from "../util/util"
 
 export default Range = ({rangeValues, onChange}) => {
     const [values, setValues] = useState([])
     const sliderRef = useRef()
     const [sliderRect, setSliderRect] = useState()
-    const [sliderWidth, setSliderWidth] = useState(200)
-    const [bullet1, setBullet1] = useState({min: 0, max: 0})
-    const [bullet2, setBullet2] = useState({min: 0, max: 0})
 
-    const [bullet1Pos, setBullet1Pos] = useState(0)
-    const [bullet2Pos, setBullet2Pos] = useState(100)
- 
+    const [bullet1, setBullet1] = useState(0)
+    const [bullet2, setBullet2] = useState(100)
+    const bullet1Ref = useRef()
+    const bullet2Ref = useRef()
+    
+    const [dimensions1, setDimensions1] = useState({min: 0, max: 0}) //De 0 a bullet 2
+    const [dimensions2, setDimensions2] = useState({min: 0, max: 0}) //De bullet1 a 100
+
     useEffect(() => {
-        setValues(rangeValues.sort((a, b) => a-b))
+        const orderedValues = [...rangeValues.sort((a,b) => a-b)]
+        setValues(orderedValues)
+        setBullet1(0)
+        setBullet2(100)
     }, [rangeValues])
 
     useEffect(() => {
         if(sliderRef.current){
-            const rect = sliderRef.current.getBoundingClientRect()
-            setSliderRect(rect)
-            setSliderWidth(sliderRef.current.offsetWidth)
+            setSliderRect(sliderRef.current.getBoundingClientRect())
         }
     }, [sliderRef.current])
 
     useEffect(() => {
         if(sliderRect){
-            setBullet1({min: sliderRect.left, max: sliderRect.left + bullet2Pos, width:sliderWidth})
-            setBullet2({min: sliderRect.left + bullet1Pos, max: sliderRect.right, width:sliderWidth})
+            const offsetValues = getOffsetValues(values, sliderRect.width)
+            const maxBullet1 = bullet2 - (offsetValues * 100 / sliderRect.width)
+            const minBullet2 = bullet1 + (offsetValues * 100 / sliderRect.width)
+            setDimensions1({min: 0, max: maxBullet1})
+            setDimensions2({min: minBullet2, max: 100})
         }
-    }, [sliderRect])
+    }, [sliderRect, bullet1, bullet2, values])
+
+    useEffect(() => {
+        if(onChange && sliderRect?.width){
+            const realMinValue = getRealValue(bullet1, values, sliderRect.width)
+            const realMaxValue = getRealValue(bullet2, values, sliderRect.width)
+            onChange({min: realMinValue, max:realMaxValue})
+        }
+    }, [bullet1, bullet2])
+
+    const handleChange = (value, bullet) => {
+        const offset = value * sliderRect.width / 100 //En px
+        const nextPos = getNextValue(offset, values, sliderRect.width)
+        const near = getOfsetOfValue(nextPos,values, sliderRect.width) * 100 / sliderRect.width
+        if(bullet === "bullet1"){
+            setBullet1(near)
+            bullet1Ref.current.update(near)
+        }else{
+            setBullet2(near)
+            bullet2Ref.current.update(near)
+        }
+    }
 
     return <div className="range">
         <div className="range-wrapper">
             <Label text={values.length > 0 ? values[0] : ""} />
             <Slider ref={sliderRef}>
-                {sliderRect && <Bullet dimensions={bullet1} onChange={setBullet1Pos} />}
+                {sliderRect && 
+                <>
+                <Bullet 
+                    dimensions={dimensions1}
+                    slideRect={sliderRect}
+                    value={bullet1}
+                    ref={bullet1Ref}
+                    onChange={(value) => handleChange(value, "bullet1")} 
+                />
+                <Bullet 
+                    dimensions={dimensions2}
+                    slideRect={sliderRect}
+                    value={bullet2}
+                    ref={bullet2Ref}
+                    onChange={(value) => handleChange(value, "bullet2")} 
+                />
+                </>}
                 {/* <Bullet ref={bullet2Ref} onMouseDown={(ev) => mouseDown(ev, "bullet2")} /> */}
                 {
                     values.map(v => <Track key={v} />)
@@ -59,23 +102,32 @@ const Track = React.forwardRef(({className, ...rest}, ref) => {
     return <span {...rest} className={`track ${className || ""}`.replace(" ", "")} />
 })
 
-const Bullet = React.forwardRef(({dimensions,values, onChange, className, ...rest}, ref) => {
+const Bullet  = forwardRef(({dimensions, slideRect, value, onChange, className, ...rest}, ref) => {
     const [dragging, setDragging] = useState(false)
+    
     const bulletRef = useRef()
-    const bulletPos = useRef()
+    const offsetBulletRef = useRef()
+    const lastPosX = useRef()
 
-    const {min, max, width} = dimensions
+    const {min, max} = dimensions
 
-    console.log(min, max, width)
+    useImperativeHandle(
+        ref,
+        () => ({
+            update: (value) => move(value)
+        }),
+        [],
+    )
+
+    useEffect(() => {
+         move(value)
+    }, [value])
 
     useEffect(() => {
         if(dragging){
-            console.log("Add mousemove")
-            console.log("Add mouseup")
             document.addEventListener("mousemove", mouseMove)
             document.addEventListener('mouseup', mouseUp);
             return  () => {
-                console.log("Remove mousemove")
                 document.removeEventListener("mousemove", mouseMove);
             }
         }
@@ -83,40 +135,47 @@ const Bullet = React.forwardRef(({dimensions,values, onChange, className, ...res
 
     const mouseMove = (event) => { 
         if(dragging){
-            let newPosX = event.clientX - bulletPos.current - min
-            const end = (max - min) - bulletRef.current.offsetWidth
-            const start = 0
-            if(newPosX < start){
-                newPosX = start
+            const newPosX = event.clientX - slideRect.left
+            let percent = newPosX * 100 / slideRect.width
+            if(percent < min){
+                percent = min
+            }else if(percent > max){
+                percent = max
             }
-            if(newPosX > end){
-                newPosX = end
-            }
-            const maxPercent = end * 100 / width
-            const percent = newPosX * maxPercent / end // getPercent(newPosX, end)
-            const newValue = getLeft(percent)
-            bulletRef.current.style.left = newValue
-            if(onChange){
-                onChange(newPosX)
-            }
+            move(percent)
         }
         
     }
 
+    const move = (value) => {
+        const pos = `calc(${value}% - ${bulletRef.current.getBoundingClientRect().width / 2}px)`
+        bulletRef.current.style.left = pos
+        lastPosX.current = value
+    }
+
     const mouseUp = () => {
-        setDragging(false)
-        console.log("Remove mouseup")
         document.removeEventListener('mouseup', mouseUp);
+        setDragging(false)
+        if(onChange){
+            onChange(lastPosX.current)
+        }
     }
 
     const mouseDown = (event) => {
         setDragging(true)
-        bulletPos.current = event.clientX - bulletRef.current.getBoundingClientRect().left
+        offsetBulletRef.current = event.clientX - bulletRef.current.getBoundingClientRect().left
     }
 
 
-    return <span {...rest}  onMouseDown={mouseDown} className={`bullet ${className || ""}`.replace(" ", "")} ref={bulletRef} />
+    return <span 
+        {...rest}
+        style={{cursor: dragging ? "ew-resize" : "col-resize"}}
+        onMouseDown={mouseDown} 
+        className={`bullet ${className || ""}`.replace(" ", "")} 
+        ref={bulletRef} 
+    />
 })
+
 
 const Label = React.forwardRef(({className, text, ...rest}, ref) => {
     return <span {...rest} className={`label ${className || ""}`.replace(" ", "")}>

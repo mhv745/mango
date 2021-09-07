@@ -27,7 +27,6 @@ const stylesRules = {
 }
 
 module.exports = (env, argv) => {
-  console.log(argv)
 
   return {
     entry: "./src/index.js",
