@@ -1,5 +1,3 @@
-
-
 export const getRealValue = (position, values, width) => {
     
     const offsets = getOffsetValues(values, width)

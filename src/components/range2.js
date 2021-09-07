@@ -63,23 +63,23 @@ export default Range = ({rangeValues, onChange}) => {
             <Label text={values.length > 0 ? values[0] : ""} />
             <Slider ref={sliderRef}>
                 {sliderRect && 
-                <>
-                <Bullet 
-                    dimensions={dimensions1}
-                    slideRect={sliderRect}
-                    value={bullet1}
-                    ref={bullet1Ref}
-                    onChange={(value) => handleChange(value, "bullet1")} 
-                />
-                <Bullet 
-                    dimensions={dimensions2}
-                    slideRect={sliderRect}
-                    value={bullet2}
-                    ref={bullet2Ref}
-                    onChange={(value) => handleChange(value, "bullet2")} 
-                />
-                </>}
-                {/* <Bullet ref={bullet2Ref} onMouseDown={(ev) => mouseDown(ev, "bullet2")} /> */}
+                    <>
+                        <Bullet 
+                            dimensions={dimensions1}
+                            slideRect={sliderRect}
+                            value={bullet1}
+                            ref={bullet1Ref}
+                            onChange={(value) => handleChange(value, "bullet1")} 
+                        />
+                        <Bullet 
+                            dimensions={dimensions2}
+                            slideRect={sliderRect}
+                            value={bullet2}
+                            ref={bullet2Ref}
+                            onChange={(value) => handleChange(value, "bullet2")} 
+                        />
+                    </>
+                }
                 {
                     values.map(v => <Track key={v} />)
                 }

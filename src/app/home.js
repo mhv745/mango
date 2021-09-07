@@ -1,8 +1,6 @@
 import React, {useState} from "react"
 import { useHistory } from "react-router-dom"
 
-
-
 export const Home = () => {
     const {push} = useHistory()
     const change = (path) => {

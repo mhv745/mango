@@ -1,4 +1,3 @@
-import React, {useState} from "react"
 import { Exercise1 } from "../exercises/exercise1"
 import { Exercise2 } from "../exercises/exercise2"
 import {Home} from  "./home"
@@ -9,14 +8,7 @@ import {
   Redirect
 } from "react-router-dom";
 
-
 export const App = () => {
-    const [ejercicio, setEjercicio] = useState("")
-
-    const goTo = (url) => {
-        setEjercicio(url)
-    }
-
     return <div className="mango">
         <h1>Mango</h1>
         <Router>
@@ -27,13 +19,5 @@ export const App = () => {
                 <Redirect to="/" />
             </Switch>
         </Router>
-        {/* {
-            ejercicio === "exercise1" ? <Exercise1  onChange={goTo} /> : 
-            ejercicio === "exercise2" ? <Exercise2  onChange={goTo} /> : 
-             <Home  onChange={goTo} />
-           
-        } */}
-        
-    
     </div>
 }
