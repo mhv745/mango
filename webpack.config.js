@@ -50,6 +50,7 @@ module.exports = (env, argv) => {
     devServer: {
       open: true,
       compress: true,
+      historyApiFallback: true,
     }
   }
 };
