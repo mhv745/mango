@@ -41,6 +41,7 @@ export default Range = ({rangeValues, onChange}) => {
         if(onChange && sliderRect?.width){
             const realMinValue = getRealValue(bullet1, values, sliderRect.width)
             const realMaxValue = getRealValue(bullet2, values, sliderRect.width)
+            console.log(bullet1,realMinValue)
             onChange({min: realMinValue, max:realMaxValue})
         }
     }, [bullet1, bullet2])

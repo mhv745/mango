@@ -1,8 +1,4 @@
 
-export const percentToPx = (percent, width) => {
-    return 
-
-}
 
 export const getRealValue = (position, values, width) => {
     
@@ -18,6 +14,7 @@ export const getRealValue = (position, values, width) => {
  * Devuelve separación entre puntos
  */
 export const getOffsetValues = (values ,width) => {
+    if(values && values.length < 2) return 0
     return width / (values.length - 1)
 }
 
@@ -26,6 +23,7 @@ export const getOffsetValues = (values ,width) => {
  */
 export const getOfsetOfValue = (value, values ,width) => {
     const index = values.findIndex(v => v === value)
+    if(index === -1) throw new Error("Valor no encontrado")
     const offsetValues = getOffsetValues(values, width)
     return (index * offsetValues)
 }
