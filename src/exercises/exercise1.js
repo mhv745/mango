@@ -8,7 +8,6 @@ export const Exercise1 = () => {
     const {push} = useHistory()
 
     useEffect(() => {
-        console.log("fetching")
         window.fetch("http://demo9008528.mockable.io/range1")
         .then(res => res.json())
         .then(setValues)

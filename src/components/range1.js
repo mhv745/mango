@@ -26,14 +26,8 @@ export default Range = ({min, max,onChange}) => {
 
     useEffect(() => {
         if(sliderRect){
-            console.log(bullet1, bullet2, sliderRect)
             setDimensions1({min: 0, max: Math.floor(bullet2)})
             setDimensions2({min: Math.ceil(bullet1), max: 100})
-            // const offsetValues = getOffsetValues([], sliderRect.width)
-            // const maxBullet1 = bullet2 - (offsetValues * 100 / sliderRect.width)
-            // const minBullet2 = bullet1 + (offsetValues * 100 / sliderRect.width)
-            // setDimensions1({min: min, max: maxBullet1})
-            // setDimensions2({min: minBullet2, max: max})
         }
     }, [sliderRect, bullet1, bullet2])
 
@@ -46,23 +40,11 @@ export default Range = ({min, max,onChange}) => {
     }, [bullet1, bullet2])
 
     const handleChange = (value, bullet) => {
-        console.log(value, bullet) //Ex: value = 50 -> ha soltado a la mitad
-        
         if(bullet === "bullet1"){
             setBullet1(value)
         }else if(bullet === "bullet2"){
             setBullet2(value)
         }
-        // const offset = value * sliderRect.width / 100 //En px
-        // const nextPos = getNextValue(offset, [], sliderRect.width)
-        // const near = getOfsetOfValue(nextPos,[], sliderRect.width) * 100 / sliderRect.width
-        // if(bullet === "bullet1"){
-        //     setBullet1(near)
-        //     bullet1Ref.current.update(near)
-        // }else{
-        //     setBullet2(near)
-        //     bullet2Ref.current.update(near)
-        // }
     }
 
     return <div className="range">
