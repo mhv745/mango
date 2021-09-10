@@ -1,5 +1,7 @@
 import React, {useEffect, useState, useRef, forwardRef, useImperativeHandle} from "react"
+import PropTypes from 'prop-types';
 import { getOfsetOfValue, getNextValue, getOffsetValues, getRealValue } from "../util/util"
+
 
 const Range = ({onChange, defaultValue, rangeValues, min, max, ...rest}) => {
 
@@ -9,15 +11,17 @@ const Range = ({onChange, defaultValue, rangeValues, min, max, ...rest}) => {
 
 
 
-
+    
     return (
-        <div {...rest}>
+        <div {...rest} className={`${rest.className|| ""} range`.replace(" ", "")} >
+            <div className="range-wrapper">
             <Label text={min?.toString() || ""} onClick={() => handleChange(0, "bullet1")} />
             <Slider>
                 <Bullet dimensions={{min, max}} />
-                <Bullet />
+                <Bullet dimensions={{min, max}} />
             </Slider>
             <Label text={min?.toString() || ""} onClick={() => handleChange(0, "bullet1")} />
+            </div>
         </div>
     )
 }
@@ -110,6 +114,14 @@ const Label = ({className, text, onClick, ...rest}) => {
     return <span {...rest} style={{cursor: "pointer"}} onClick={onClick} className={`label ${className || ""}`.replace(" ", "")}>
         {text}
     </span>
+}
+
+Range.prototype = {
+    onChange: PropTypes.func,
+    defaultValue: PropTypes.shape({min:PropTypes.number, max:PropTypes.number}),
+    rangeValues: PropTypes.arrayOf(PropTypes.number) ,
+    min: PropTypes.number.isRequired,
+    max: PropTypes.number.isRequired,
 }
 
 export default Range;
