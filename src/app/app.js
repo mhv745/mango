@@ -1,5 +1,4 @@
-import { Exercise1 } from "../exercises/exercise1"
-import { Exercise2 } from "../exercises/exercise2"
+import { Exercise1, Exercise2 } from "../exercises"
 import {Home} from  "./home"
 import {
   BrowserRouter as Router,
