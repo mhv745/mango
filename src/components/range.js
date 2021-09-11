@@ -29,7 +29,7 @@ const useConverter = (width, min, max) => {
 }
 
 
-const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnLabel, ...rest}) => {
+const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnLabel, minDistance, ...rest}) => {
     const sliderRef = useRef()
     const valuesRef = useRef()
     const [sliderRect, setSliderRect] = useState()
@@ -87,23 +87,48 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
         valuesRef.current = {min: valorBullet1, max: valorBullet2}
     }
 
-    const normalizar = (value) => {
+    const normalizar = (value, arr) => {
         const real = percentToValue(value)
-        if(Array.isArray(rangeValues) && rangeValues.length > 0){
-            const proximo = rangeValues
-                .reduce((prev, curr) => Math.abs(curr - real) < Math.abs(prev - real) ? curr : prev )
+        if(Array.isArray(arr) && arr.length > 0){
+            const proximo = arr
+                .reduce((prev, curr) => Math.abs(curr - real) < Math.abs(prev - real) ? curr : prev)
             return valueToPercent(proximo)
         }
         const proximo = Math.round(real * 100) / 100
         return valueToPercent(proximo)
     }
 
+    const getPosiblesValores = (desde, hasta) => {
+        if(Array.isArray(rangeValues) && rangeValues.length > 0){
+            if(typeof desde !== "undefined"){
+                const index = rangeValues.indexOf(percentToValue(desde))
+                return rangeValues.slice(index + 1)
+            }
+            if(typeof hasta !== "undefined"){
+                const index = rangeValues.indexOf(percentToValue(hasta))
+                return rangeValues.slice(0, index)
+            }
+        }
+    }
+
     const change = (value, bullet) => {
-        const normalizado = normalizar(value)
+        const realBullet1 = percentToValue(bullet1.value)
+        const realBullet2 = percentToValue(bullet2.value)
+
         if(bullet === "bullet1"){
+            let normalizado = normalizar(value, getPosiblesValores(undefined, bullet2.value))
+            const realNormalizado = percentToValue(normalizado)
+            if(minDistance > 0 && Math.abs(realNormalizado - realBullet2) < minDistance){
+                normalizado =  valueToPercent(realBullet2 - minDistance)
+            }
             setBullet1(prev => ({...prev, value: normalizado}))
             setBullet2(prev => ({...prev, min: normalizado}))
         }else if(bullet === "bullet2"){
+            let normalizado = normalizar(value, getPosiblesValores(bullet1.value, undefined))
+            const realNormalizado = percentToValue(normalizado)
+            if(minDistance > 0 && Math.abs(realNormalizado - realBullet1) < minDistance){
+                normalizado =  valueToPercent(realBullet1 + minDistance)
+            }
             setBullet2(prev => ({...prev, value: normalizado}))
             setBullet1(prev => ({...prev, max: normalizado}))
         }
@@ -149,7 +174,6 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
 }
 
 const Tracks = ({values}) => {
-    console.log(values)
     return <div style={{width: "100%"}}>
         {
             values.map((v, i) => <span key={i} style={{
@@ -158,11 +182,8 @@ const Tracks = ({values}) => {
                             width: "1px",
                             height: "5px",
                             background: "white",
-                            fontSize: "10px",
                             left: `${v}%`
-                        }} >
-                            <span style={{fontSize: "10px", marginTop: "10px"}}>{v}</span>
-                        </span>)
+                        }} />)
         }
     </div>
 }
@@ -188,7 +209,6 @@ const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, 
     useEffect(() => {
         if(bulletRef?.current){
             bulletWidthRef.current = bulletRef.current.getBoundingClientRect().width
-            console.log(bulletWidthRef.current)
         }
     }, [bulletRef.current])
 
@@ -267,7 +287,8 @@ Range.prototype = {
     rangeValues: PropTypes.arrayOf(PropTypes.number),
     min: PropTypes.number.isRequired,
     max: PropTypes.number.isRequired,
-    clickOnLabel: PropTypes.bool
+    clickOnLabel: PropTypes.bool,
+    minDistance: PropTypes.number
 }
 
 export default Range;
