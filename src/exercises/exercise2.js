@@ -1,27 +1,23 @@
 import React, {useState, useEffect} from "react"
-import Range from "../components/range2";
+import Range from "../components/range";
 import { useHistory } from "react-router-dom"
 
 export const Exercise2 = ({onChange}) => {
-    const [values, setValues] = useState([])
-    const [value, setValue] = useState()
+    const [range, setRange] = useState([])
+    const [values, setValues] = useState()
     const {push} = useHistory()
 
     useEffect(() => {
         window.fetch("https://demo9008528.mockable.io/range2")
         .then(res => res.json())
-        .then(v => setValues(v))
+        .then(v => {
+            console.log(v)
+            setRange([1.99, 5.99, 10.99, 30.99, 50.99, 71.99])
+        })
     }, [])
 
-    useEffect(() => {
-        if(values.length > 0){
-            setValue({min: values[0], max: values[values.length - 1]})
-        }
-    }, [values])
-
-    const change = (value) => {
-        console.log("Valor cambiado: ", value)
-        setValue(value)
+    const change = (values) => {
+        setValues(values)
     }
 
     const goTo = (path) => {
@@ -34,8 +30,8 @@ export const Exercise2 = ({onChange}) => {
 
 
         <div>
-            <Range rangeValues={values} onChange={change} />
-            {value && <p>Min: ${value.min}, Max: ${value.max}</p>}
+            <Range rangeValues={range} onChange={change} />
+            {values && <p>Min: ${values.min}, Max: ${values.max}</p>}
         </div>
     </>
 }

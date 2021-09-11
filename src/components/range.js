@@ -31,23 +31,26 @@ const useConverter = (width, min, max) => {
 
 const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnLabel, minDistance, ...rest}) => {
     const sliderRef = useRef()
-    const valuesRef = useRef()
     const [sliderRect, setSliderRect] = useState()
-    const [minimo, setMinimo] = useState(0)
-    const [maximo, setMaximo] = useState(100)
+    const [minimo, setMinimo] = useState()
+    const [maximo, setMaximo] = useState()
 
     const [bullet1, setBullet1] = useState()
     const [bullet2, setBullet2] = useState()
     const bullet1Ref = useRef()
     const bullet2Ref = useRef()
 
-    const { percentToValue, valueToPercent } = useConverter(sliderRect?.width || 200, minimo, maximo)
-
     useEffect(() => {
         const rect = sliderRef.current?.getBoundingClientRect()
         setSliderRect(rect)
+    }, [sliderRef?.current, rangeValues])
+
+    useEffect(() => {
+        console.log("Reseteando...")
         reset()
-    }, [sliderRef?.current])
+    }, [defaultValue, rangeValues, min, max, clickOnLabel, minDistance, sliderRect])
+
+
 
     useEffect(() => {
         if(bullet1Ref?.current && bullet2Ref.current){
@@ -56,24 +59,29 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
         }
         if(typeof bullet1?.value === "undefined" || typeof bullet2?.value === "undefined"|| typeof onChange === "undefined") return 
         onChange({
-            min: percentToValue(bullet1.value),
-            max: percentToValue(bullet2.value)
+            min: Math.round(percentToValue(bullet1.value) * 100) / 100,
+            max: Math.round(percentToValue(bullet2.value) * 100) / 100
         })
     }, [bullet1, bullet2])
 
+
+    const { percentToValue, valueToPercent } = useConverter(sliderRect?.width, minimo, maximo)
+
+
     const reset = () => {
+        if(!sliderRect) return
         const minimoAbsoluto = Array.isArray(rangeValues) && rangeValues.length > 0 ? 
         rangeValues[0] : min || 0;
         const maximoAbsoluto = Array.isArray(rangeValues) && rangeValues.length > 0 ? 
             rangeValues[rangeValues.length - 1] : max || 100;
+        setMinimo(minimoAbsoluto)
+        setMaximo(maximoAbsoluto)
         const valorBullet1 = typeof defaultValue?.min !== "undefined" && defaultValue.min >=  minimoAbsoluto ? 
             defaultValue.min : 
             minimoAbsoluto;
         const valorBullet2 = typeof defaultValue?.max !== "undefined" && defaultValue.max <=  maximoAbsoluto ? 
             defaultValue.max : 
             maximoAbsoluto;
-        setMinimo(minimoAbsoluto)
-        setMaximo(maximoAbsoluto)
         setBullet1({
             min: valueToPercent(minimoAbsoluto),
             max: valueToPercent(maximoAbsoluto),
@@ -84,7 +92,7 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
             max: valueToPercent(maximoAbsoluto),
             value: valueToPercent(valorBullet2)
         })
-        valuesRef.current = {min: valorBullet1, max: valorBullet2}
+        console.log(valueToPercent(valorBullet1), valueToPercent(valorBullet2))
     }
 
     const normalizar = (value, arr) => {
@@ -116,26 +124,24 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
         const realBullet2 = percentToValue(bullet2.value)
 
         if(bullet === "bullet1"){
-            let normalizado = normalizar(value, getPosiblesValores(undefined, bullet2.value))
-            const realNormalizado = percentToValue(normalizado)
-            if(minDistance > 0 && Math.abs(realNormalizado - realBullet2) < minDistance){
-                normalizado =  valueToPercent(realBullet2 - minDistance)
+            let newValue = normalizar(value, getPosiblesValores(undefined, bullet2.value))
+            if(minDistance > 0 && Math.abs(percentToValue(newValue) - realBullet2) < minDistance){
+                newValue =  valueToPercent(realBullet2 - minDistance)
             }
-            setBullet1(prev => ({...prev, value: normalizado}))
-            setBullet2(prev => ({...prev, min: normalizado}))
+            setBullet1(prev => ({...prev, value: newValue}))
+            setBullet2(prev => ({...prev, min: newValue}))
         }else if(bullet === "bullet2"){
-            let normalizado = normalizar(value, getPosiblesValores(bullet1.value, undefined))
-            const realNormalizado = percentToValue(normalizado)
-            if(minDistance > 0 && Math.abs(realNormalizado - realBullet1) < minDistance){
-                normalizado =  valueToPercent(realBullet1 + minDistance)
+            let newValue = normalizar(value, getPosiblesValores(bullet1.value, undefined) )
+            if(minDistance > 0 && Math.abs(percentToValue(newValue) - realBullet1) < minDistance){
+                newValue =  valueToPercent(realBullet1 + minDistance)
             }
-            setBullet2(prev => ({...prev, value: normalizado}))
-            setBullet1(prev => ({...prev, max: normalizado}))
+            setBullet2(prev => ({...prev, value: newValue}))
+            setBullet1(prev => ({...prev, max: newValue}))
         }
         
     }
 
-    
+    const renderBullets = sliderRect && bullet1 && bullet2
     return (
         <div {...rest} className={`${rest.className|| ""} range`.replace(" ", "")} >
             <div className="range-wrapper">
@@ -144,7 +150,7 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
                 onClick={!clickOnLabel ? undefined : () => change(valueToPercent(minimo), "bullet1")} 
             />
             <Slider ref={sliderRef}>
-                {sliderRect &&
+                {renderBullets &&
                     <>
                         <Bullet 
                             values={bullet1} 
@@ -192,12 +198,10 @@ const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, 
     const [dragging, setDragging] = useState(false)
     
     const bulletRef = useRef()
-    const offsetBulletRef = useRef()
+    const offsetBulletRef = useRef(10)
     const lastPosX = useRef()
-    const bulletWidthRef = useRef(10)
 
     const {min, max, value} = values
-
     useImperativeHandle(
         ref,
         () => ({
@@ -207,12 +211,7 @@ const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, 
     )
 
     useEffect(() => {
-        if(bulletRef?.current){
-            bulletWidthRef.current = bulletRef.current.getBoundingClientRect().width
-        }
-    }, [bulletRef.current])
-
-    useEffect(() => {
+        console.log(value)
          move(value)
     }, [value])
 
@@ -252,7 +251,7 @@ const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, 
     }
 
     const move = (value) => {
-        const pos = `calc(${value}% - ${bulletWidthRef.current / 2}px)`
+        const pos = `calc(${value}% - ${offsetBulletRef.current}px)`
         bulletRef.current.style.left = pos
         lastPosX.current = value
     }
