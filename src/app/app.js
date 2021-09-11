@@ -5,7 +5,7 @@ import {
   Switch,
   Route,
   Redirect
-} from "react-router-dom";
+} from "react-router-dom"
 
 export const App = () => {
     return <div className="mango">

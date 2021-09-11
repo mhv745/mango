@@ -1,6 +1,5 @@
-import React, {useEffect, useState, useRef, forwardRef, useCallback, useImperativeHandle} from "react"
-import PropTypes from 'prop-types';
-import { getOfsetOfValue, getNextValue, getOffsetValues, getRealValue } from "../util/util"
+import React, {useEffect, useState, useRef, forwardRef, useImperativeHandle} from "react"
+import PropTypes from 'prop-types'
 
 /**
  * Custom hook para transformar entre unidades y porcentajes
@@ -13,7 +12,7 @@ const useConverter = (width, min, max) => {
         if(typeof width !== undefined){
             const pixels = value * width / 100
             const resultado =  (pixels * (max - min) / width) + min
-            return resultado
+            return Math.round(resultado * 100) / 100
         }
     }
 
@@ -46,13 +45,13 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
     }, [sliderRef?.current, rangeValues])
 
     useEffect(() => {
-        console.log("Reseteando...")
         reset()
     }, [defaultValue, rangeValues, min, max, clickOnLabel, minDistance, sliderRect])
 
 
 
     useEffect(() => {
+        
         if(bullet1Ref?.current && bullet2Ref.current){
             bullet1Ref.current.update(bullet1.value)
             bullet2Ref.current.update(bullet2.value)
@@ -71,17 +70,17 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
     const reset = () => {
         if(!sliderRect) return
         const minimoAbsoluto = Array.isArray(rangeValues) && rangeValues.length > 0 ? 
-        rangeValues[0] : min || 0;
+        rangeValues[0] : min || 0
         const maximoAbsoluto = Array.isArray(rangeValues) && rangeValues.length > 0 ? 
-            rangeValues[rangeValues.length - 1] : max || 100;
+            rangeValues[rangeValues.length - 1] : max || 100
         setMinimo(minimoAbsoluto)
         setMaximo(maximoAbsoluto)
         const valorBullet1 = typeof defaultValue?.min !== "undefined" && defaultValue.min >=  minimoAbsoluto ? 
             defaultValue.min : 
-            minimoAbsoluto;
+            minimoAbsoluto
         const valorBullet2 = typeof defaultValue?.max !== "undefined" && defaultValue.max <=  maximoAbsoluto ? 
             defaultValue.max : 
-            maximoAbsoluto;
+            maximoAbsoluto
         setBullet1({
             min: valueToPercent(minimoAbsoluto),
             max: valueToPercent(maximoAbsoluto),
@@ -92,7 +91,6 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
             max: valueToPercent(maximoAbsoluto),
             value: valueToPercent(valorBullet2)
         })
-        console.log(valueToPercent(valorBullet1), valueToPercent(valorBullet2))
     }
 
     const normalizar = (value, arr) => {
@@ -132,6 +130,9 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
             setBullet2(prev => ({...prev, min: newValue}))
         }else if(bullet === "bullet2"){
             let newValue = normalizar(value, getPosiblesValores(bullet1.value, undefined) )
+
+            
+
             if(minDistance > 0 && Math.abs(percentToValue(newValue) - realBullet1) < minDistance){
                 newValue =  valueToPercent(realBullet1 + minDistance)
             }
@@ -198,33 +199,32 @@ const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, 
     const [dragging, setDragging] = useState(false)
     
     const bulletRef = useRef()
-    const offsetBulletRef = useRef(10)
     const lastPosX = useRef()
+    const widthRef = useRef(12)
 
     const {min, max, value} = values
     useImperativeHandle(
         ref,
         () => ({
-            update: (value) => move(value)
+            update: (v) => move(v)
         }),
         [],
     )
 
     useEffect(() => {
-        console.log(value)
          move(value)
     }, [value])
 
     useEffect(() => {
         if(dragging){
             document.addEventListener("mousemove", mouseMove)
-            document.addEventListener('mouseup', mouseUp);
-            return  () => document.removeEventListener("mousemove", mouseMove);
+            document.addEventListener('mouseup', mouseUp)
+            return  () => document.removeEventListener("mousemove", mouseMove)
         }
     }, [dragging])
 
     const mouseUp = () => {
-        document.removeEventListener('mouseup', mouseUp);
+        document.removeEventListener('mouseup', mouseUp)
         setDragging(false)
         if(onChange){
             onChange(lastPosX.current)
@@ -232,8 +232,8 @@ const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, 
     }
 
     const mouseDown = (event) => {
+        widthRef.current = bulletRef.current.getBoundingClientRect().width / 2
         setDragging(true)
-        offsetBulletRef.current = event.clientX - bulletRef.current.getBoundingClientRect().left
     }
 
     const mouseMove = (event) => { 
@@ -251,7 +251,7 @@ const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, 
     }
 
     const move = (value) => {
-        const pos = `calc(${value}% - ${offsetBulletRef.current}px)`
+        const pos = `calc(${value}% - ${widthRef.current}px)`
         bulletRef.current.style.left = pos
         lastPosX.current = value
     }
@@ -290,4 +290,4 @@ Range.prototype = {
     minDistance: PropTypes.number
 }
 
-export default Range;
+export default Range

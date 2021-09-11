@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from "react"
-import Range from "../components/range";
+import Range from "../components/range"
 import { useHistory } from "react-router-dom"
 
 export const Exercise1 = () => {
