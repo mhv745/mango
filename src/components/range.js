@@ -135,6 +135,9 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
                         />
                     </>
                 }
+                {
+                    rangeValues && <Tracks values={rangeValues.map(v => valueToPercent(v))} />
+                }
             </Slider>
             <Label 
                 text={maximo} 
@@ -143,6 +146,25 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
             </div>
         </div>
     )
+}
+
+const Tracks = ({values}) => {
+    console.log(values)
+    return <div style={{width: "100%"}}>
+        {
+            values.map((v, i) => <span key={i} style={{
+                            position: "absolute",
+                            top: "-2px",
+                            width: "1px",
+                            height: "5px",
+                            background: "white",
+                            fontSize: "10px",
+                            left: `${v}%`
+                        }} >
+                            <span style={{fontSize: "10px", marginTop: "10px"}}>{v}</span>
+                        </span>)
+        }
+    </div>
 }
 
 const Bullet  = forwardRef(({values, sliderRect, onChange, className, ...rest}, ref) => {
