@@ -158,12 +158,14 @@ const Range = ({onChange, defaultValue, rangeValues, min = 0, max= 100, clickOnL
                             sliderRect={sliderRect}
                             onChange={(value) => change(value, "bullet1")}
                             ref={bullet1Ref}
+                            data-testid="bullet1"
                         />
                         <Bullet 
                             values={bullet2} 
                             sliderRect={sliderRect}
                             onChange={(value) => change(value, "bullet2")}
                             ref={bullet2Ref}
+                            data-testid="bullet2"
                         />
                     </>
                 }

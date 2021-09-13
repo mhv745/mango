@@ -8,15 +8,18 @@ import {
 } from "react-router-dom"
 
 export const App = () => {
-    return <div className="mango">
-        <h1>Mango</h1>
-        <Router>
-            <Switch>
-                <Route exact path="/" component={Home} />
-                <Route path="/exercise1" component={Exercise1} />
-                <Route path="/exercise2" component={Exercise2} />
-                <Redirect to="/" />
-            </Switch>
-        </Router>
+    return <div className="container">
+        <div className="mango">
+            <h1>Mango</h1>
+            <Router>
+                <Switch>
+                    <Route exact path="/" component={Home} />
+                    <Route path="/exercise1" component={Exercise1} />
+                    <Route path="/exercise2" component={Exercise2} />
+                    <Redirect to="/" />
+                </Switch>
+            </Router>
+        </div>
+        <p className="poweredby">powered by <a title="Miguel Hernández Von Hartmann" href="https://hernandezmiguel.es" rel="follow" target="_blank">hernandezmiguel.es</a></p>
     </div>
 }
