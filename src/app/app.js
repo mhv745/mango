@@ -1,4 +1,4 @@
-import { Exercise1, Exercise2 } from "../exercises"
+import { Examples, Exercise1, Exercise2 } from "../exercises"
 import {Home} from  "./home"
 import {
   BrowserRouter as Router,
@@ -16,6 +16,7 @@ export const App = () => {
                     <Route exact path="/" component={Home} />
                     <Route path="/exercise1" component={Exercise1} />
                     <Route path="/exercise2" component={Exercise2} />
+                    <Route path="/examples" component={Examples} />
                     <Redirect to="/" />
                 </Switch>
             </Router>

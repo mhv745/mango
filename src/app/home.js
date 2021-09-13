@@ -10,5 +10,6 @@ export const Home = () => {
     return <>
         <button onClick={() => change("/exercise1")} >Go to Exercise 1</button>
         <button onClick={() => change("/exercise2")} >Go to Exercise 2</button>
+        <button onClick={() => change("/examples")} >Go to Examples</button>
     </>
 }
