@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from "react"
 import Range from "../components/range"
 import { useHistory } from "react-router-dom"
+import { get } from "../services/api"
 
 export const Exercise2 = () => {
     const [range, setRange] = useState([])
@@ -8,9 +9,7 @@ export const Exercise2 = () => {
     const {push} = useHistory()
 
     useEffect(() => {
-        window.fetch("https://demo9008528.mockable.io/range2")
-        .then(res => res.json())
-        .then(v => setRange(v))
+        get("range2").then(setRange)
     }, [])
 
     const change = (values) => {
